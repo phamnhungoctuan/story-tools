@@ -1,7 +1,48 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Minimum hardware requirements
+MIN_CPU_CORES=4
+MIN_RAM_MB=16000  # 16GB in MB
+MIN_DISK_GB=200   # 200GB in GB
+
 # Functions
+
+check_system_requirements() {
+    echo "Checking system requirements..."
+
+    # Get CPU cores
+    local cpu_cores=$(grep -c ^processor /proc/cpuinfo)
+    # Get available RAM in MB
+    local ram_mb=$(free -m | awk '/^Mem:/{print $2}')
+    # Get available disk space in GB
+    local disk_gb=$(df --output=avail / | tail -1 | awk '{print $1/1024/1024}')
+
+    # Check if the system meets the requirements
+    if (( cpu_cores < MIN_CPU_CORES )); then
+        echo "Insufficient CPU cores: ${cpu_cores} cores available, but ${MIN_CPU_CORES} cores required."
+        return 1
+    fi
+
+    if (( ram_mb < MIN_RAM_MB )); then
+        echo "Insufficient RAM: ${ram_mb} MB available, but ${MIN_RAM_MB} MB required."
+        return 1
+    fi
+
+    if (( $disk_gb < $MIN_DISK_GB )); then
+        echo "Insufficient disk space: ${disk_gb} GB available, but ${MIN_DISK_GB} GB required."
+        return 1
+    fi
+
+    echo "System meets the minimum hardware requirements."
+
+    printf "%-12s %-10s\n" "Resource" "Minimum Requirement"
+    printf "%-12s %-10s\n" "--------" "-------------------"
+    printf "%-12s %-10s\n" "CPU" "4 Cores"
+    printf "%-12s %-10s\n" "RAM" "16 GB"
+    printf "%-12s %-10s\n" "Disk" "200 GB"
+    printf "%-12s %-10s\n" "Bandwidth" "25 MBit/s"
+}
 
 download_and_extract() {
     local url=$1
@@ -25,6 +66,7 @@ check_command_success() {
 
 mainMenu() {
     echo -e "\033[36m""Story Validator Tools""\e[0m"
+    echo "0. Check system hardware requirements"
     echo "1. Install Story Node"
     echo "2. Update Story Consensus"
     echo "3. Update Story Geth"
@@ -151,6 +193,9 @@ while true; do
     echo
 
     case "$CHOICE" in
+        "0") # Check system hardware requirements
+            check_system_requirements
+            ;;
         "1") # Install Story node
             installMenu
             ;;
