@@ -75,6 +75,9 @@ mainMenu() {
     echo "6. Get Validator dashboard link"
     echo "7. Get Validator Public and Private Key"
     echo "8. Get faucet"
+    echo "9. Check gETH logs"
+    echo "10. Check Story logs"
+    echo "11. Restart your node"
     echo "q. Quit"
 }
 
@@ -224,6 +227,15 @@ while true; do
             ;;
         "8") # Get faucet
             echo "https://story.faucetme.pro/"
+            ;;
+        "9") # Check story-geth logs
+            sudo journalctl -u story-geth -f -o cat
+            ;;
+        "10") # Check story logs
+            sudo journalctl -u story -f -o cat
+            ;;
+        "11") # Restart node
+            sudo systemctl start story && systemctl start story-geth
             ;;
         "q") # quit the script
             exit
